@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Geomagnetic Mood Art</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#0b1220;
+    color:white;
+}
+
+header{
+    text-align:center;
+    padding:30px;
+    background:linear-gradient(135deg,#14213d,#1b4965);
+}
+
+h1{
+    margin:0;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
+}
+
+.card{
+    background:#162032;
+    border-radius:15px;
+    padding:20px;
+    margin-bottom:20px;
+}
+
+select, textarea, button{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border:none;
+    border-radius:8px;
+}
+
+button{
+    cursor:pointer;
+    background:#3b82f6;
+    color:white;
+    font-weight:bold;
+}
+
+button:hover{
+    background:#2563eb;
+}
+
+canvas{
+    width:100%;
+    max-width:600px;
+    display:block;
+    margin:auto;
+    background:black;
+    border-radius:10px;
+}
+
+.gallery{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+    gap:15px;
+}
+
+.entry{
+    background:#1f2937;
+    padding:15px;
+    border-radius:12px;
+}
+
+.badge{
+    display:inline-block;
+    padding:5px 10px;
+    border-radius:20px;
+    font-size:12px;
+    margin-bottom:10px;
+}
+
+footer{
+    text-align:center;
+    padding:20px;
+    opacity:.7;
+}
+</style>
+</head>
+<body>
+
+<header>
+    <h1>🌎 Geomagnetic Mood Art</h1>
+    <p>Community • Art • Digital • Mood Mapping</p>
+</header>
+
+<div class="container">
+
+<div class="card">
+<h2>Today's Mood</h2>
+
+<select id="mood">
+<option>Calm</option>
+<option>Inspired</option>
+<option>Curious</option>
+<option>Hopeful</option>
+<option>Focused</option>
+<option>Stormy</option>
+<option>Overwhelmed</option>
+<option>Reflective</option>
+</select>
+
+<textarea id="journal" rows="4"
+placeholder="What are you feeling today?"></textarea>
+
+<button onclick="saveEntry()">Save Mood Entry</button>
+</div>
+
+<div class="card">
+<h2>Geomagnetic Mood Canvas</h2>
+<canvas id="artCanvas" width="600" height="400"></canvas>
+
+<button onclick="generateArt()">
+Generate Geomagnetic Art
+</button>
+</div>
+
+<div class="card">
+<h2>Community Mood Gallery</h2>
+<div class="gallery" id="gallery"></div>
+</div>
+
+<div class="card">
+<h2>Export Journal</h2>
+<button onclick="exportData()">Download JSON</button>
+</div>
+
+</div>
+
+<footer>
+Geomagnetic Mood Art • Worker Bees for AI
+</footer>
+
+<script>
+
+const canvas = document.getElementById("artCanvas");
+const ctx = canvas.getContext("2d");
+
+function moodColor(mood){
+
+switch(mood){
+
+case "Calm":
+return "#3b82f6";
+
+case "Inspired":
+return "#f59e0b";
+
+case "Curious":
+return "#06b6d4";
+
+case "Hopeful":
+return "#10b981";
+
+case "Focused":
+return "#8b5cf6";
+
+case "Stormy":
+return "#ef4444";
+
+case "Overwhelmed":
+return "#f97316";
+
+case "Reflective":
+return "#94a3b8";
+
+default:
+return "#ffffff";
+}
+}
+
+function generateArt(){
+
+let mood =
+document.getElementById("mood").value;
+
+let color = moodColor(mood);
+
+ctx.fillStyle="#000";
+ctx.fillRect(0,0,canvas.width,canvas.height);
+
+for(let i=0;i<120;i++){
+
+ctx.beginPath();
+
+let x=Math.random()*canvas.width;
+let y=Math.random()*canvas.height;
+let size=Math.random()*50;
+
+ctx.strokeStyle=color;
+ctx.lineWidth=Math.random()*3;
+
+ctx.arc(
+x,
+y,
+size,
+0,
+Math.PI*2
+);
+
+ctx.stroke();
+
+}
+}
+
+function saveEntry(){
+
+const mood =
+document.getElementById("mood").value;
+
+const text =
+document.getElementById("journal").value;
+
+const entry = {
+date:new Date().toLocaleString(),
+mood,
+text
+};
+
+let entries =
+JSON.parse(
+localStorage.getItem("geomagneticMoodEntries")
+|| "[]"
+);
+
+entries.unshift(entry);
+
+localStorage.setItem(
+"geomagneticMoodEntries",
+JSON.stringify(entries)
+);
+
+renderGallery();
+
+document.getElementById("journal").value="";
+}
+
+function renderGallery(){
+
+let entries =
+JSON.parse(
+localStorage.getItem("geomagneticMoodEntries")
+|| "[]"
+);
+
+const gallery =
+document.getElementById("gallery");
+
+gallery.innerHTML="";
+
+entries.forEach(entry=>{
+
+const div =
+document.createElement("div");
+
+div.className="entry";
+
+div.innerHTML=`
+<div class="badge"
+style="background:${moodColor(entry.mood)}">
+${entry.mood}
+</div>
+
+<p>${entry.text}</p>
+
+<small>${entry.date}</small>
+`;
+
+gallery.appendChild(div);
+
+});
+}
+
+function exportData(){
+
+let entries =
+localStorage.getItem(
+"geomagneticMoodEntries"
+);
+
+let blob =
+new Blob([entries],
+{type:"application/json"});
+
+let a =
+document.createElement("a");
+
+a.href=
+URL.createObjectURL(blob);
+
+a.download=
+"geomagnetic-mood-art.json";
+
+a.click();
+}
+
+generateArt();
+renderGallery();
+
+</script>
+
+</body>
+</html>
